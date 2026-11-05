@@ -13,6 +13,13 @@ CREATE TABLE IF NOT EXISTS users (
   firstname     VARCHAR(60)  NOT NULL,
   lastname      VARCHAR(60)  NOT NULL,
   phone         VARCHAR(30)  NOT NULL DEFAULT '',
+  -- Dirección (objeto anidado en el JSON): opcional, por eso admite NULL (US11).
+  city          VARCHAR(80)  NULL,
+  street        VARCHAR(120) NULL,
+  street_number VARCHAR(20)  NULL,
+  zipcode       VARCHAR(20)  NULL,
+  lat           DECIMAL(9,6) NULL,
+  lng           DECIMAL(9,6) NULL,
   created_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   UNIQUE KEY uq_users_username (username),

@@ -13,6 +13,33 @@ class CartModel {
     return result.insertId;
   }
 
+  /**
+   * US12: todos los carritos (de todos los clientes) con sus artículos.
+   * Por defecto solo los "activos" (con al menos un artículo); includeEmpty
+   * también trae los vacíos. Los artículos salen solo con productId y cantidad.
+   */
+  static async findAllWithItems({ includeEmpty = false } = {}) {
+    const carts = await Database.query(
+      `SELECT c.id, c.user_id, u.username, c.created_at
+       FROM carts c
+       JOIN users u ON u.id = c.user_id
+       ${includeEmpty ? '' : 'WHERE EXISTS (SELECT 1 FROM cart_items ci WHERE ci.cart_id = c.id)'}
+       ORDER BY c.created_at DESC, c.id DESC`
+    );
+    if (carts.length === 0) return [];
+
+    const rows = await Database.query(
+      'SELECT cart_id, product_id, quantity FROM cart_items WHERE cart_id IN (?) ORDER BY id',
+      [carts.map((c) => c.id)]
+    );
+    const byCart = new Map();
+    for (const r of rows) {
+      if (!byCart.has(r.cart_id)) byCart.set(r.cart_id, []);
+      byCart.get(r.cart_id).push({ product_id: r.product_id, quantity: r.quantity });
+    }
+    return carts.map((c) => ({ ...c, items: byCart.get(c.id) || [] }));
+  }
+
   static async findCart(cartId) {
     const rows = await Database.query('SELECT id, user_id, updated_at FROM carts WHERE id = ?', [cartId]);
     return rows[0] || null;

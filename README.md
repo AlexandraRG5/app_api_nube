@@ -99,12 +99,13 @@ Todos (menos el login) exigen `Authorization: Bearer <token>`.
 | Método | URL | Quién | Qué hace |
 |--------|-----|-------|----------|
 | POST | /api/auth/login | todos | Login → `{ token, user }` |
-| GET | /api/users, /api/users/:id | admin, auditor | Mostrar usuarios |
+| GET | /api/users, /api/users/:id | admin, auditor | Mostrar usuarios (incluye `address` anidado con `geolocation`, o `null`) |
 | POST | /api/users | admin | Agregar usuario |
 | GET | /api/products, /products/:id | autenticado | Mostrar productos / uno por ID |
 | GET | /api/products/categories | autenticado | Listar categorías |
 | GET | /api/products/category/:nombre | autenticado | Productos de una categoría |
 | POST, PUT, DELETE | /api/products, /products/:id | admin | Agregar, editar, borrar producto |
+| GET | /api/carts | **auditor, admin** | Historial global de carritos activos (solo lectura). `?all=true` incluye vacíos |
 | GET | /api/carts/me | **cliente** | Mi carrito (lo crea vacío si no existe) |
 | POST | /api/carts | **cliente** | Agregar `{productId, quantity}`; si ya existe, **suma** la cantidad |
 | PUT | /api/carts/:id | **cliente** | Cambiar `{productId, quantity}`; con 0 elimina el artículo |

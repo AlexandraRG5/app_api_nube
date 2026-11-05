@@ -14,9 +14,24 @@ const fs = require('fs');
 const path = require('path');
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
-const { users, products } = require('./seedData');
+const { users, products, addresses } = require('./seedData');
 const { buildDbConfig } = require('../src/config/dbConfig');
 const describeError = require('../src/utils/describeError');
+
+/** Agrega a una tabla ya existente las columnas que le falten (migración simple). */
+async function ensureColumns(conn, database, table, columns, log) {
+  const [rows] = await conn.query(
+    'SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?',
+    [database, table]
+  );
+  const existing = new Set(rows.map((r) => String(r.COLUMN_NAME).toLowerCase()));
+  for (const [name, definition] of Object.entries(columns)) {
+    if (!existing.has(name)) {
+      await conn.query(`ALTER TABLE \`${table}\` ADD COLUMN \`${name}\` ${definition}`);
+      log(`Columna agregada: ${table}.${name}`);
+    }
+  }
+}
 
 async function runSetup(log = console.log) {
   const { config, database } = buildDbConfig({ withDatabase: false });
@@ -38,6 +53,16 @@ async function runSetup(log = console.log) {
     await conn.query(schema);
     log('Tablas listas.');
 
+    // Bases creadas con una versión anterior no tienen las columnas de dirección.
+    await ensureColumns(conn, database, 'users', {
+      city: 'VARCHAR(80) NULL',
+      street: 'VARCHAR(120) NULL',
+      street_number: 'VARCHAR(20) NULL',
+      zipcode: 'VARCHAR(20) NULL',
+      lat: 'DECIMAL(9,6) NULL',
+      lng: 'DECIMAL(9,6) NULL',
+    }, log);
+
     const [[{ total: userCount }]] = await conn.query('SELECT COUNT(*) AS total FROM users');
     if (userCount === 0) {
       // Ids explícitos 1..N: la regla de roles depende de ellos
@@ -53,6 +78,15 @@ async function runSetup(log = console.log) {
       log(`Usuarios de ejemplo insertados: ${users.length}`);
     } else {
       log('La tabla users ya tiene datos: no se insertó nada.');
+    }
+
+    // Direcciones de ejemplo: solo se llenan en los usuarios de ejemplo que aún no tienen una.
+    for (const [username, a] of Object.entries(addresses)) {
+      await conn.query(
+        `UPDATE users SET city = ?, street = ?, street_number = ?, zipcode = ?, lat = ?, lng = ?
+         WHERE username = ? AND city IS NULL AND street IS NULL`,
+        [a.city, a.street, a.number, a.zipcode, a.lat, a.lng, username]
+      );
     }
 
     const [[{ total: productCount }]] = await conn.query('SELECT COUNT(*) AS total FROM products');

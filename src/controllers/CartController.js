@@ -24,6 +24,13 @@ async function renderCart(cartId) {
 }
 
 class CartController {
+  /** GET /api/carts -> historial global de carritos (US12, solo lectura: auditor y administrador) */
+  static async index(req, res) {
+    const includeEmpty = req.query.all === 'true';
+    const carts = await CartModel.findAllWithItems({ includeEmpty });
+    res.json(carts.map(CartView.renderGlobal));
+  }
+
   /** GET /api/carts/me -> carrito del usuario (lo crea vacío si no existe) */
   static async me(req, res) {
     const cartId = await CartModel.getOrCreateCartId(req.user.id);

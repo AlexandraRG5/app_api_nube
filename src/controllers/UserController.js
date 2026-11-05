@@ -35,6 +35,16 @@ class UserController {
       throw new HttpError(409, 'El usuario o el email ya existen.');
     }
 
+    // Dirección opcional: { city, street, number, zipcode, geolocation: { lat, long } }
+    const addr = (req.body && req.body.address) || {};
+    const geo = addr.geolocation || {};
+    const lat = geo.lat == null ? null : Number(geo.lat);
+    const lng = geo.long == null ? null : Number(geo.long);
+    if ((lat !== null && !(lat >= -90 && lat <= 90)) || (lng !== null && !(lng >= -180 && lng <= 180))) {
+      throw new HttpError(400, 'Las coordenadas de la dirección no son válidas.');
+    }
+    const clean = (v) => (typeof v === 'string' && v.trim() ? v.trim() : null);
+
     const created = await UserModel.create({
       username: username.trim(),
       email: email.trim(),
@@ -42,6 +52,14 @@ class UserController {
       firstname: firstname.trim(),
       lastname: lastname.trim(),
       phone: typeof phone === 'string' ? phone.trim() : '',
+      address: {
+        city: clean(addr.city),
+        street: clean(addr.street),
+        number: clean(addr.number),
+        zipcode: clean(addr.zipcode),
+        lat,
+        lng,
+      },
     });
     res.status(201).json(UserView.render(created));
   }

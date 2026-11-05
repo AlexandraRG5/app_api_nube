@@ -44,4 +44,18 @@ const products = [
     description: 'Blusa de tela fresca con botones al frente y manga larga.', image: img('Blusa') },
 ];
 
-module.exports = { users, products };
+/** Direcciones de ejemplo (objeto anidado con coordenadas) por nombre de usuario. */
+const addresses = {
+  johnd:     { city: 'Querétaro',   street: 'Av. Universidad',   number: '120', zipcode: '76010', lat: 20.588800, lng: -100.389900 },
+  mor_2314:  { city: 'Ciudad de México', street: 'Calle Reforma', number: '45', zipcode: '06600', lat: 19.432600, lng: -99.133200 },
+  kevinryan: { city: 'Guadalajara', street: 'Av. Chapultepec',   number: '310', zipcode: '44100', lat: 20.659700, lng: -103.349600 },
+  donero:    { city: 'Monterrey',   street: 'Calle Hidalgo',     number: '88',  zipcode: '64000', lat: 25.686600, lng: -100.316100 },
+  derek:     { city: 'Puebla',      street: 'Blvd. Atlixco',     number: '1502', zipcode: '72000', lat: 19.041400, lng: -98.206300 },
+  david_r:   { city: 'León',        street: 'Calle Madero',      number: '27',  zipcode: '37000', lat: 21.125000, lng: -101.686000 },
+  snyder:    { city: 'Mérida',      street: 'Calle 60',          number: '410', zipcode: '97000', lat: 20.967400, lng: -89.592600 },
+  hopkins:   { city: 'Tijuana',     street: 'Av. Revolución',    number: '905', zipcode: '22000', lat: 32.514900, lng: -117.038200 },
+  kate_h:    { city: 'Toluca',      street: 'Paseo Tollocan',    number: '73',  zipcode: '50000', lat: 19.282600, lng: -99.655700 },
+  jimmie_k:  { city: 'Morelia',     street: 'Av. Madero Poniente', number: '12', zipcode: '58000', lat: 19.706000, lng: -101.195000 },
+};
+
+module.exports = { users, products, addresses };
